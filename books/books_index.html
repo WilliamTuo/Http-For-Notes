@@ -1,0 +1,60 @@
+<html>
+<head>
+ <meta charset="utf-8">
+        <title>书籍阅读笔记</title>
+        <style> 
+            .body{
+                background-image:url(/tupian/bg.jpeg);
+                background-size:cover;
+                background-repeat:no-repeat;
+                padding-top:80px;
+            }
+
+            .head{
+                text-align: center;
+                font-weight:bold;
+                font-size:24px;
+                /*background-image:url(/tupian/td.jpg);*/
+                background-color:rgba(255,255,255,0.6);
+                background-repeat:no-repeat;
+                background-size:100% 100%;
+                -moz-background-size:100% 100%;
+                border-radius: 20px;
+                width: 600px;
+                height: 500px;
+                margin: auto;
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+            }
+
+			li
+			{
+				list-style:none;
+			}
+
+        </style>
+    </head>
+    <body class="body">
+        <div class="head"  >
+            <br>
+            <h1>书籍阅读笔记</h1>
+            <br>
+            <form action="/cgi/echoServer" method="GET" >
+                <div >
+					<ul>
+					<li><a href="/books/C++_Primer_Plus/C++_Primer_Plus_index.html" title="C++ Primer Plus">C++ Primer Plus</a></li>
+					<li><a href="/books/HTTP_Diagram/HTTP_Diagram_index.html" title="图解 HTTP">图解 HTTP</a></li>
+					<li><a href="/books/Programmer_Self-cultivation/Programmer_Self-cultivation_index.html" title="程序员的自我修养">程序员的自我修养</a></li>
+					<li><a href="/books/unix_Env_Senior_Programming/unix_Env_Senior_Programming_index.html" title="unix 环境高级编程"> unix 环境高级编程</a></li>
+					<li><a href="/books/C++_Programming/C++_Programming_index.html" title="C++ 程序设计">C++ 程序设计</a></li>
+					<li><a href="/books/TCP_IP_Diagram/TCP_IP_Diagram_index.html" title="图解 TCP/IP">图解 TCP/IP</a></li>
+					<li><a href="/" title="学习笔记">返回首页</a></li>
+					</ul>
+				</div>
+            </form>
+        </div>
+    </body>
+</html>

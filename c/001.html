@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>如果对fopen函数不进行错误检查可能会出现什么后果？</title>
+  <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+  <meta name="exporter-version" content="YXBJ Windows/600240 (zh-CN, DDL); Windows/6.1.1 (Win32);"/>
+  <style>
+    body, td {
+      font-size: 10pt;
+    }
+  </style>
+</head>
+<body>
+<h3>如果对fopen函数不进行错误检查可能会出现什么后果？</h3>
+
+<div>
+<span><div>如果由于任何原因导致打开失败，函数的返回值将是NULL，当这个值传递给后续的I/O函数时，该函数就会失败。至于程序是否失败，则取决于编译器。如果程序并不终止，那么I/O操作可能会修改内存中有些不可预料的位置的内容。</div></span>
+</div></body></html>
