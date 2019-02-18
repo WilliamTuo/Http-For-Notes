@@ -73,6 +73,29 @@ class Util
 
 			return "Unknow";
 		}
+
+		static std::string SuffixToContent(std::string &suffix)
+		{
+			// TODO
+			if (suffix == ".css")
+			{
+				return "text/css";
+			}
+			if (suffix == ".js")
+			{
+				return "application/javascript";
+			}
+			if (suffix == ".jpg")
+			{
+				return	"application/x-jpg";		
+			}
+			if (suffix == ".html")
+			{
+				return "text/html";
+			}
+
+			return "text/html";
+		}
 };
 
 
@@ -176,6 +199,22 @@ public:
 	void MakeResponseHeader()
 	{
 		std::string line;
+		std::string suffix;
+		
+		// Content-Type
+		line = "Content-Type: ";
+		std::size_t pos = path.rfind(".");
+		if (std::string::npos != pos)
+		{
+			suffix = path.substr(pos);
+			// 将文件名的后缀转成小写
+			transform(suffix.begin(), suffix.end(), suffix.begin(), ::tolower);
+		}
+		line += Util::SuffixToContent(suffix);
+		line += "\r\n";
+		response_header.push_back(line);
+
+		// Content-Length
 		line  = "Content-Length: ";
 		line += Util::IntToString(resource_size);
 		line += "\r\n";

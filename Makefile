@@ -9,3 +9,4 @@ $(bin): HttpServer.cpp
 .PHONY: clean
 clean:
 	rm -rf $(bin)
+
