@@ -15,15 +15,13 @@
 #include <netinet/in.h>
 #include <sys/socket.h>
 #include <sys/stat.h>
+#include <sys/wait.h>
 #include <sys/types.h>
 #include <sys/sendfile.h>
 #include <arpa/inet.h>
 
 #include "HttpServer.hpp"
 #include "Config.h"
-
-#define BACKLOG 5
-#define BUF_NUM 1024
 
 #define NORMAL 0
 #define WARNING 1
@@ -58,7 +56,7 @@ class Util
 			return ss.str();
 		}
 
-		// 将状态码转换成状态码描述信息
+		// 将状态码转换成状态码描述信息 TODO
 		static std::string CodeToDesc(int code)
 		{
 			switch(code)
@@ -95,6 +93,24 @@ class Util
 			}
 
 			return "text/html";
+		}
+
+
+		// 将一个错误码转换到对应的错误处理页面
+		static std::string CodeToExceptFile(int code)
+		{
+			switch(code)
+			{
+				case 404:
+					return HTML_404;
+				default:
+					break;
+			}
+		}
+
+		// TODO
+		static int FileSize(std::string &except_path)
+		{
 		}
 };
 
@@ -183,6 +199,7 @@ public:
 	// 构造状态行
 	void MakeStatusLine()
 	{
+		// TODO
 		status_line = "HTTP/1.O";
 		status_line += " ";
 
@@ -195,7 +212,7 @@ public:
 		LOG("Make Status Line Ok!", NORMAL);
 	}
 
-	// 构造响应报头
+	// 构造响应报头 TODO
 	void MakeResponseHeader()
 	{
 		std::string line;
@@ -255,7 +272,6 @@ public:
 
 	~Http_Response()
 	{}
-
 };
 
 class Http_Request
@@ -345,14 +361,13 @@ public:
 	}
 
 	// 判断请求行中路径是否合法
-	bool IsPathLegal(Http_Response *rsp)
+	int IsPathLegal(Http_Response *rsp)
 	{
 		struct stat st;
 		int rs = 0;
 
 		if (stat(path.c_str(), &st) < 0)
 		{
-			LOG("file not exist!", WARNING);
 			return 404;
 		}
 		else
@@ -385,7 +400,7 @@ public:
 
 		LOG("PATH ok", NORMAL);
 		 
-		return 0;
+		return 200;
 	}
 
 	// 解析报头
@@ -420,6 +435,19 @@ public:
 		ss >> content_length;
 		
 		return content_length;
+	}
+	
+	// 获取请求中的参数
+	std::string GetParam()
+	{
+		if (method == "GET")
+		{
+			return query_string;
+		}
+		else if (method == "POST")
+		{
+			return request_text;
+		}
 	}
 
 	~Http_Request()
@@ -521,19 +549,40 @@ public:
 	}
 
 	// 发送正文
-	void SendText(Http_Response *rsp)
+	void SendText(Http_Response *rsp, bool cgi)
 	{
-		std::string &path = rsp->GetPath();
-		int fd = open(path.c_str(), O_RDONLY);
-		if (fd < 0)
+		if (!cgi)
 		{
-			LOG("open file error!", WARNING);
-			return ;
-		}
-		
-		sendfile(sock, fd, nullptr, rsp->ResourceSize());
+			std::string &path = rsp->GetPath();
+			int fd = open(path.c_str(), O_RDONLY);
+			if (fd < 0)
+			{
+				LOG("open file error!", WARNING);
+				return ;
+			}
+			
+			sendfile(sock, fd, nullptr, rsp->ResourceSize());
 
-		close(fd);
+			close(fd);
+		}
+		else
+		{
+			std::string &rsp_text = rsp->response_text;
+			send(sock, rsp_text.c_str(), rsp_text.size(), 0);
+		}
+	}
+
+	void ClearRequest()
+	{
+		std::string line = "a";
+
+		// 读到空行
+		while (line != "\n")
+		{
+			RecvOneLine(line);
+		}
+
+		// 获取 content-length, 读取正文
 	}
 
 	~Connect()
@@ -548,8 +597,92 @@ public:
 class Entry
 {
 public:
+	// 运行 cgi 程序
+	static int ProcessCgi(Connect *conn, Http_Request *rq, Http_Response *rsp)
+	{
+		// 获取 cgi 可执行文件的路径
+		std::string bin = rsp->GetPath();
+		//bin += CGI_PATH;
+
+		// 获取参数及参数大小
+		std::string param = rq->GetParam();
+		int size =  param.size();
+		std::string param_size = "CONTENT-LENGTH=";
+		param_size += Util::IntToString(size);
+
+		std::string response_text = rsp->response_text;  // 用于存储父进程接收到的子进程运行的结果
+
+
+		// 相对子进程获取和子进程输出创建管道
+		int input[2];	// 子进程进行参数获取的管道描述符
+		int output[2];  // 子进程进行输出结果的管道描述符
+		pipe(input);
+		pipe(output);
+
+		pid_t id = fork();
+		if (id < 0)
+		{
+			LOG("fork error", WARNING);
+			return 500;
+		}
+		else if (id == 0)
+		{
+			// 子进程
+			close(input[1]);
+			close(output[0]);
+
+			// 将管道描述符重定向到标准输入，标准输出，
+			// 防止 exec 进行程序替换时将管道描述符作为数据进行转换
+			dup2(input[0], 0);
+			dup2(output[1], 1);
+
+			// 将参数通过环境变量的方式传递给 cgi 程序
+			putenv((char *)param_size.c_str());
+			// 调用 exec 函数进行程序替换
+			execl(bin.c_str(), bin.c_str(), nullptr);
+
+			close(input[0]);
+			close(output[1]);
+
+			exit(1);
+		}
+		else
+		{
+			// 父进程
+			close(input[0]);
+			close(output[1]);
+
+
+			char c;
+			for (auto i = 0; i < size; ++i)
+			{
+				c = param[i];
+				write(input[1], &c, 1);
+			}
+			
+			waitpid(id, nullptr, 0);
+
+			while (read(output[0], &c, 1) > 0)
+			{
+				response_text.push_back(c);
+			}	
+			rsp->MakeStatusLine();
+			rsp->SetResourceSize(response_text.size());
+			rsp->MakeResponseHeader();
+
+			conn->SendStatusLine(rsp);
+			conn->SendHeader(rsp); 
+			conn->SendText(rsp, true);
+
+			close(input[1]);
+			close(output[0]);
+		}
+
+		return 200;
+	}
+
 	// 运行非 cgi 程序
-	static void ProcessNonCgi(Connect* conn, Http_Request *rq, Http_Response *rsp)
+	static int ProcessNonCgi(Connect* conn, Http_Request *rq, Http_Response *rsp)
 	{
 		rsp->MakeStatusLine();
 		rsp->MakeResponseHeader();
@@ -557,17 +690,20 @@ public:
 
 		conn->SendStatusLine(rsp);
 		conn->SendHeader(rsp); // 空行也发出去
-		conn->SendText(rsp);
+		conn->SendText(rsp, false);
 
 		LOG("Send Response Ok!", NORMAL);
+
+		return 200;
 	}
 
 	// 运行响应程序
-	static void ProcessResponse(Connect *conn, Http_Request *rq, Http_Response *rsp)
+	static int ProcessResponse(Connect *conn, Http_Request *rq, Http_Response *rsp)
 	{
 		if (rq->IsCgi())
 		{
-			// ProcessCgi();
+			LOG("MakeResponse need cgi!", NORMAL);
+			ProcessCgi(conn, rq, rsp);
 		}
 		else
 		{
@@ -577,21 +713,21 @@ public:
 	}
 
 	// 运行程序
-	static void *HandlerRequest(void *arg)
+	static void HandlerRequest(int sock/*void *arg*/)
 	{
 		pthread_detach(pthread_self());
-		int *sock = (int *)arg;
+		//int *sock = (int *)arg;
 
 #ifdef _DEBUG_
 		char buf[10240];
-		read(*sock, buf, sizeof(buf));
+		read(sock, buf, sizeof(buf));
 
 		std::cout << "##############################" << std::endl;
 		std::cout << buf;
 		std::cout << "##############################" << std::endl;
 
 #else
-		Connect *conn = new Connect(*sock);
+		Connect *conn = new Connect(sock);
 		Http_Request *rq = new Http_Request();
 		Http_Response *rsp = new Http_Response();
 		conn->RecvOneLine(rq->request_line);
@@ -601,6 +737,9 @@ public:
 		rq->RequestLineParse();
 		if (!rq->IsMethodLegal())
 		{
+			code = 400;
+			conn->ClearRequest();
+			//ProcessResponse(conn, rq, rsp);
 			LOG("request method illegal!", WARNING);
 			goto end;
 		}
@@ -611,9 +750,11 @@ public:
 		rq->UriParse();
 
 		// 路径不合法
-		if (rq->IsPathLegal(rsp))
+		if ((code = rq->IsPathLegal(rsp)) != 200)
 		{
+			std::cout << code << std::endl;
 			code = 404;
+			conn->ClearRequest();
 			LOG("file is not exist!", WARNING);
 			goto end;
 		}
@@ -638,13 +779,22 @@ public:
 		// 写响应
 		ProcessResponse(conn, rq, rsp);
 end:
+		// Request 已经读取完毕，错误处理
+		//if (code != 200)
+		//{
+		//	std::string except_path = Util::CodeToExceptFile(code);
+		//	int rs = Util::FileSize(except_path);
+		//	rsp->SetPath(except_path);
+		//	rsp->SetResourceSize(rs);
+		//	ProcessNonCgi(conn, rq, rsp);
+		//}
 		delete conn;
 		delete rq;
 		delete rsp;
-		delete sock;
+		//delete sock;
 #endif
 		//close(sock); // ~connect close(sock) 
-		return (void *)0;
+		//return (void *)0;
 	}
 
 };

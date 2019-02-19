@@ -10,7 +10,7 @@ static void Usage(std::string proc)
 
 int main(int argc, char* argv[])
 {
-	daemon(1, 0);
+	//daemon(1, 0);
 	if (argc != 2)
 	{
 		Usage(argv[0]);
