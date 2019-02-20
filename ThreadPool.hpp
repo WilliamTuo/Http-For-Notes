@@ -163,25 +163,25 @@ public:
 		}
 		return p;
 	}
-//
-//public:
-//	class CGarbo
-//	{
-//		public:
-//			~CGarbo()
-//			{
-//				if (Singleton::p)
-//				{
-//					delete Singleton::p;
-//				}
-//			}
-//	};
-//
-//	static CGarbo Garbo;
+
+public:
+	class CGarbo
+	{
+		public:
+			~CGarbo()
+			{
+				if (Singleton::p)
+				{
+					delete Singleton::p;
+				}
+			}
+	};
+
+	static CGarbo Garbo;
 };
 
 ThreadPool *Singleton::p = nullptr;
-//Singleton::CGarbo Garbo;
+Singleton::CGarbo Garbo;
 pthread_mutex_t Singleton::mutex = PTHREAD_MUTEX_INITIALIZER;
 
 #endif  // __THREADPOOL_H__
