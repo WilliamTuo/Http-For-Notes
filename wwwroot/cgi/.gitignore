@@ -1,0 +1,10 @@
+##ignore this file##
+/mysql/
+
+##class file##
+GetData.c
+insert_file.c
+insert.js
+log.txt
+user_login
+  

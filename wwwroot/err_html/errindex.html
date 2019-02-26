@@ -1,0 +1,104 @@
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>注册界面</title>
+        <style> 
+            .body{
+                background-image:url(/tupian/bg.jpeg);
+                background-size:cover;
+                background-repeat:no-repeat;
+                padding-top:80px;
+            }
+
+            .head{
+                text-align: center;
+                font-weight:bold;
+                font-size:24px;
+                background-image:url(/tupian/td.jpg);
+                background-repeat:no-repeat;
+                background-size:100% 100%;
+                -moz-background-size:100% 100%;
+                border-radius: 20px;
+                width: 600px;
+                height: 500px;
+                margin: auto;
+                position: absolute;
+                top: -200px;
+                left: 1200px;
+                right: 0;
+                bottom: 0;
+            }
+
+            .head2{
+                text-align: center;
+                font-weight:bold;
+                font-size:24px;
+                background-color:rgba(255,255,255,0.2);
+                box-shadow: 10px 10px 5px #888888;
+                width: 800px;
+                height: 600px;
+                position: absolute;
+                top:100px;
+                left:100px;
+                right: 0;
+                bottom: 0;
+            }
+            .txt{
+                font-weight:bold;
+                font-size:25px;
+                border-radius: 10px;
+                background-color:rgba(0,0,255,0.3);
+                width:300px;        
+                height:35px;      
+                position:relative;
+                top:-2px;    
+                left:0;
+            }
+            .button{
+                text-align: center;
+                font-weight:bold;
+                font-size:25px;
+                background-color:rgba(255,0,0,0.7);
+                width:100px;        
+                height:35px;      
+                position:relative;
+                top:0;    
+                left:0;
+            }
+            .word{
+                font-size:30px;
+            }
+        </style>
+    </head>
+    <body class="body">
+        <script>alert("用户已被注册或者密码错误，请重新输入");</script>
+        <div class="head2">
+            <h1>welcome to my http!</h1>
+            <h2>公司简介</h2>
+        </div>
+
+        <div class="head"  >
+            <br>
+            <h1>XX公司员工管理</h1>
+            <br>
+            <form action="/cgi/echoServer" method="GET" >
+                <div >
+                    <font class="word">账号:</font>
+                    <input type="text" class="txt" name="id" placeholder="账号/手机/邮箱">
+                    <br>
+                    <br>
+                    <br>
+                    <font class="word">密码:</font>
+                    <input type="password" class="txt" name="pwd" placeholder="请输入密码">
+                    <br>
+                    <br>
+                    <br>
+                    <input type="submit" class="button" value="注册">
+                    &nbsp;&nbsp;&nbsp;&nbsp;
+                    <input type="submit" class="button" value="登录" formaction="/cgi2/server">
+                    <br>
+                </div>
+            </form>
+        </div>
+    </body>
+</html>
