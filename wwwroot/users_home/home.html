@@ -1,0 +1,64 @@
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>云笔记</title>
+        <style> 
+            .body{
+                background-image:url(/tupian/gudu.jpg);
+                background-size:cover;
+                background-repeat:no-repeat;
+                padding-top:80px;
+            }
+
+            .head2{
+                text-align: center;
+                font-weight:bold;
+                font-size:24px;
+                background-color:rgba(255,255,255,0.2);
+                box-shadow: 10px 10px 5px #888888;
+                width: 800px;
+                height: 600px;
+                position: absolute;
+                top:200px;
+                left:630px;
+                right: 0;
+                bottom: 0;
+            }
+            .button{
+                text-align: center;
+                font-weight:bold;
+                font-size:25px;
+                background-color:rgba(255,0,0,0.7);
+                width:300px;        
+                height:35px;      
+                position:relative;
+                top:0;    
+                left:0;
+            }
+            .word{
+                font-size:30px;
+            }
+        </style>
+    </head>
+    <body class="body">
+        <div class="head2">
+            <h1>welcome to cloude note!</h1>
+            <br><br>
+            <form action="/cgi/user_login" method="POST" >
+                <div >
+                     用户:
+                     <input type="text" name="name" value="字母或数字">
+                     <br><br>
+                      密码:
+                      <input type="password" name="password" value="字母或数字">
+                     <br><br>
+                     <input type="submit" value="找回密码" formaction="/cgi/password_retrieval">
+                     <br><br>
+                    <input type="submit" class="button" value="登录" formaction="/cgi/user_login">
+                     <br><br>
+                    <input type="submit" class="button" value="注册"  formaction="/cgi/user_register" >
+                </div>
+            </form>
+        </div>
+    </body>
+</html>
