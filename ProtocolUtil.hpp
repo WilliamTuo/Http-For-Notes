@@ -63,8 +63,12 @@ class Util
 			{
 				case 200:
 					return "Ok";
+				case 400:
+					return "Bad Request";
 				case 404:
 					return "File Not Found";
+				case 500:
+					return "Internal Server Error";
 				default:
 					break;
 			}
@@ -103,14 +107,21 @@ class Util
 			{
 				case 404:
 					return HTML_404;
+				case 500:
+					return HTML_404;
+				case 503:
+					return HTML_404;
 				default:
 					break;
 			}
 		}
 
-		// TODO
 		static int FileSize(std::string &except_path)
 		{
+      struct stat st;
+
+      stat(except_path.c_str(), &st);
+      return st.st_size;
 		}
 };
 
@@ -185,6 +196,7 @@ public:
 	std::string status_line;								// 响应行
 	std::vector<std::string> response_header;				// 响应报头
 	std::string blank;
+	std::string version;
 	std::string response_text;								// 响应正文
 
 private:
@@ -199,8 +211,7 @@ public:
 	// 构造状态行
 	void MakeStatusLine()
 	{
-		// TODO
-		status_line = "HTTP/1.O";
+		status_line = version;
 		status_line += " ";
 
 		status_line += Util::IntToString(code);
@@ -247,6 +258,7 @@ public:
 		return code;
 	}
 
+
 	// 设置资源路径
 	void SetPath(std::string &path_)
 	{
@@ -257,6 +269,12 @@ public:
 	{
 		return path;
 	}
+
+  // 设置版本号
+  void SetVersion(std::string version_)
+  {
+    version = version_;
+  }
 
 	// 设置目标资源的大小
 	void SetResourceSize(int rs_)
@@ -300,15 +318,15 @@ public:
 	{}
 
 	// 解析请求行
-	void RequestLineParse()
+	void RequestLineParse(Http_Response *req)
 	{
 		std::stringstream ss(request_line);
 		
 		ss >> method >> uri >> version;
 
 		transform(method.begin(), method.end(), method.begin(),::toupper);
-
-		std::cout << method << std::endl;
+    
+    req->SetVersion(version);
 	}
 
 	// 判断请求行中的方法是否合法
@@ -390,7 +408,7 @@ public:
 			}
 			else
 			{
-				// TODO
+        ;
 			}
 		}
 
@@ -418,14 +436,27 @@ public:
 	// 判断是否需要继续读
 	bool IsNeedRecv()
 	{
-		// TODO 只考虑了 POST 和 GET 两种情况
-		return method == "POST" ? true : false;
+		// 只考虑了 POST 和 GET 两种情况
+		if (method == "POST")
+    {
+      return true;
+    }
+    else 
+    {
+      return false;
+    }
 	}
 
 	bool IsCgi()
 	{
 		return cgi;
 	}
+
+  // 获取 方法
+  std::string GetMethod()
+  {
+    return method;
+  }
 
 	// 获取 content-length 字段
 	int ContentLength()
@@ -449,6 +480,7 @@ public:
 			return request_text;
 		}
 	}
+
 
 	~Http_Request()
 	{}
@@ -572,9 +604,10 @@ public:
 		}
 	}
 
-	void ClearRequest()
+	void ClearRequest(Http_Request *rq)
 	{
 		std::string line = "a";
+    char ch = '\0';
 
 		// 读到空行
 		while (line != "\n")
@@ -583,6 +616,11 @@ public:
 		}
 
 		// 获取 content-length, 读取正文
+    int length = rq->ContentLength(); 
+    while (length--)
+    {
+      recv(sock, &ch, 1, 0);
+    }
 	}
 
 	~Connect()
@@ -592,8 +630,6 @@ public:
 
 };
 
-
-
 class Entry
 {
 public:
@@ -601,16 +637,17 @@ public:
 	static int ProcessCgi(Connect *conn, Http_Request *rq, Http_Response *rsp)
 	{
 		// 获取 cgi 可执行文件的路径
-		std::string bin = rsp->GetPath();
-		//bin += CGI_PATH;
+    std::string bin = rsp->GetPath();
+
 
 		// 获取参数及参数大小
 		std::string param = rq->GetParam();
 		int size =  param.size();
 		std::string param_size = "CONTENT-LENGTH=";
 		param_size += Util::IntToString(size);
+    
 
-		std::string response_text = rsp->response_text;  // 用于存储父进程接收到的子进程运行的结果
+		std::string &response_text = rsp->response_text;  // 用于存储父进程接收到的子进程运行的结果
 
 
 		// 相对子进程获取和子进程输出创建管道
@@ -631,18 +668,16 @@ public:
 			close(input[1]);
 			close(output[0]);
 
+			// 将参数通过环境变量的方式传递给 cgi 程序
+			putenv((char *)param_size.c_str());
+
 			// 将管道描述符重定向到标准输入，标准输出，
 			// 防止 exec 进行程序替换时将管道描述符作为数据进行转换
 			dup2(input[0], 0);
 			dup2(output[1], 1);
-
-			// 将参数通过环境变量的方式传递给 cgi 程序
-			putenv((char *)param_size.c_str());
-			// 调用 exec 函数进行程序替换
+			
+      // 调用 exec 函数进行程序替换
 			execl(bin.c_str(), bin.c_str(), nullptr);
-
-			close(input[0]);
-			close(output[1]);
 
 			exit(1);
 		}
@@ -666,6 +701,7 @@ public:
 			{
 				response_text.push_back(c);
 			}	
+
 			rsp->MakeStatusLine();
 			rsp->SetResourceSize(response_text.size());
 			rsp->MakeResponseHeader();
@@ -674,15 +710,13 @@ public:
 			conn->SendHeader(rsp); 
 			conn->SendText(rsp, true);
 
-			close(input[1]);
-			close(output[0]);
 		}
 
 		return 200;
 	}
 
 	// 运行非 cgi 程序
-	static int ProcessNonCgi(Connect* conn, Http_Request *rq, Http_Response *rsp)
+	static int ProcessNonCgi(Connect* conn , Http_Response *rsp)
 	{
 		rsp->MakeStatusLine();
 		rsp->MakeResponseHeader();
@@ -703,12 +737,12 @@ public:
 		if (rq->IsCgi())
 		{
 			LOG("MakeResponse need cgi!", NORMAL);
-			ProcessCgi(conn, rq, rsp);
+			return ProcessCgi(conn, rq, rsp);
 		}
 		else
 		{
 			LOG("MakeResponse need nonecgi!", NORMAL);
-			ProcessNonCgi(conn, rq, rsp);
+			return ProcessNonCgi(conn, rsp);
 		}
 	}
 
@@ -734,11 +768,11 @@ public:
 
 		int &code = rsp->Code();
 
-		rq->RequestLineParse();
+		rq->RequestLineParse(rsp);
 		if (!rq->IsMethodLegal())
 		{
 			code = 400;
-			conn->ClearRequest();
+			conn->ClearRequest(rq);
 			//ProcessResponse(conn, rq, rsp);
 			LOG("request method illegal!", WARNING);
 			goto end;
@@ -752,9 +786,7 @@ public:
 		// 路径不合法
 		if ((code = rq->IsPathLegal(rsp)) != 200)
 		{
-			std::cout << code << std::endl;
-			code = 404;
-			conn->ClearRequest();
+			conn->ClearRequest(rq);
 			LOG("file is not exist!", WARNING);
 			goto end;
 		}
@@ -777,17 +809,17 @@ public:
 		LOG("Http request read done!", NORMAL);
 
 		// 写响应
-		ProcessResponse(conn, rq, rsp);
+		code = ProcessResponse(conn, rq, rsp);
 end:
 		// Request 已经读取完毕，错误处理
-		//if (code != 200)
-		//{
-		//	std::string except_path = Util::CodeToExceptFile(code);
-		//	int rs = Util::FileSize(except_path);
-		//	rsp->SetPath(except_path);
-		//	rsp->SetResourceSize(rs);
-		//	ProcessNonCgi(conn, rq, rsp);
-		//}
+		if (code != 200)
+		{
+			std::string except_path = Util::CodeToExceptFile(code);
+			int rs = Util::FileSize(except_path);
+			rsp->SetPath(except_path);
+			rsp->SetResourceSize(rs);
+			ProcessNonCgi(conn, rsp);
+		}
 		delete conn;
 		delete rq;
 		delete rsp;
@@ -798,6 +830,5 @@ end:
 	}
 
 };
-
 
 #endif //__PROTOCOLUTIL_H__
