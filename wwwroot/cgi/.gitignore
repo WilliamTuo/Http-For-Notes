@@ -2,9 +2,9 @@
 /mysql/
 
 ##class file##
-GetData.c
 insert_file.c
-insert.js
+create_notes.c
+user_manage.c
 log.txt
 user_login
   

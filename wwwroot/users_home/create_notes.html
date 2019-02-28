@@ -1,7 +1,7 @@
 <html>
     <head>
         <meta charset="utf-8">
-        <title>云笔记</title>
+        <title>创建笔记</title>
         <style> 
             .body{
                 background-image:url(/tupian/gudu.jpg);
@@ -40,23 +40,18 @@
             }
         </style>
     </head>
-    <body class="body">
+    <body class="body" onload="abc">
         <div class="head2">
-            <h1>welcome to cloude note!</h1>
             <br><br>
-            <form action="/cgi/user_login" method="POST" >
+            <form action="/cgi/create_notes" method="GET" >
                 <div >
-                     用户:
-                     <input type="text" name="name" placeholder="字母或数字">
+                     笔记名称：
+                     <input type="text" name="note_name" value="">
                      <br><br>
-                      密码:
-                      <input type="password" name="password" placeholder="字母或数字">
+                      笔记内容:
                      <br><br>
-                     <input type="submit" value="找回密码" formaction="/users_home/password_retrieval.html">
-                     <br><br>
-                    <input type="submit" class="button" value="登录" formaction="/cgi/user_login">
-                     <br><br>
-                    <input type="submit" class="button" value="注册"  formaction="/users_home/register.html" >
+                    <input type="submit" class="button" value="提交" formaction="/cgi/upload_notes">
+                    <div><a href=""></a></div>
                 </div>
             </form>
         </div>

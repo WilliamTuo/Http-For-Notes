@@ -1,7 +1,7 @@
 <html>
     <head>
         <meta charset="utf-8">
-        <title>图书管理界面</title>
+        <title>上传笔记</title>
         <script src="http://ajax.aspnetcdn.com/ajax/jQuery/jquery-1.8.0.js">
         </script>
         <style> 
@@ -68,8 +68,8 @@
     </head>
     <body class="body">
         <div class="head">
-            <h1>图书录入</h1>
-            <form action="/cgi2/insert" method="GET" >
+            <h2>上传笔记</h2>
+            <form action="/cgi/upload_file" method="POST" >
                 <script type="text/javascript">            
                     //判断浏览器是否支持FileReader接口
                 if (typeof FileReader == 'undefined') {
@@ -79,7 +79,7 @@
                 }
 
 //选择图片，马上预览
-function xmTanUploadImg(obj) {
+function xmTanUploadFile(obj) {
     var file = obj.files[0];
     console.log(obj);console.log(file);
     console.log("file.size = " + file.size);  //file.size 单位为byte
@@ -99,73 +99,41 @@ function xmTanUploadImg(obj) {
     }
     reader.onload = function (e) {
         console.log("成功读取....");
-        var img = document.getElementById("xmTanImg");
-        img.src = e.target.result;
-        MaxWidth = "480";
-        MaxHeight = "380";
-        if(img.width > 0 && img.height > 0){
-            var rate = (MaxWidth/img.width < MaxHeight/img.height)?MaxWidth/img.width:MaxHeight/img.height;
-            if(rate <= 1){   
-                img.width = MaxWidth;
-                img.height = MaxHeight;
-            }else {
-                img.width = img.width;
-                img.height =img.height;
-            }
-                            
-        }
-        /*if(img.width < MaxWidth && img.height < MaxHeight){
-            ;
-        }else{
-            if(MaxWidth / MaxHeight <= img.widht / img.height){
-                img.widht = MaxWidth;
-                img.height = 
-            }else{
-                img.height = MaxHeight;
-            }
-        }*/
-        //或者 img.src = this.result;  //e.target == this
+        var file = document.getElementById("xmTanFile");
+        file.src = e.target.result;
     }
     reader.readAsDataURL(file);
 }
 function submitImg(){                                                                                                                        
-     var src = $('img').attr('src');
+     var src = $('file').attr('src');
      var name = $('input').attr('text');
      var write = $('input').attr('text');
      var type = $('input').attr('text');
      var price = $('input').attr('text');
-     $.post('/cgi2/insert',{prc:src,bookname:txt,writer:txt,type:txt,price:txt}).done(function(){
-                          alert('图片上传成功');
+     $.post('/cgi/upload_file',{prc:src,bookname:txt,writer:txt,type:txt,price:txt}).done(function(){
+                          alert('文件上传成功');
                                        
                           });
  }
 </script>
 <div class="head2">
     <p>
-    上传图书预览：
+    上传文件：
     <input type="file" id="xdaTanFileImg" name='prc' onchange="xmTanUploadImg(this)" accept="image/*"/>
-    <input type="button" value="隐藏图片" onclick="document.getElementById('xmTanImg').style.display = 'none';"/>
-    <input type="button" value="显示图片" onclick="document.getElementById('xmTanImg').style.display = 'block';"/>
+    <input type="button" value="隐藏文件" onclick="document.getElementById('xmTanFile').style.display = 'none';"/>
+    <input type="button" value="显示文件" onclick="document.getElementById('xmTanFile').style.display = 'block';"/>
     </p>
-    <img id="xmTanImg"/>
+    <img id="xmTanfile"/>
     <div id="xmTanDiv">
     </div>
 </div>
                 <div >
-                    书名:
-                    <input type="text" class="txt" name="bookname" >
+                    文件名:
+                    <input type="text" class="txt" name="filename" >
                     <br>
                     <br>
-                    作者:
-                    <input type="text" class="txt" name="writer" >
-                    <br>
-                    <br>
-                    种类:
-                    <input type="text" class="txt" name="type" >
-                    <br>
-                    <br>
-                    价格:
-                    <input type="text" class="txt" name="price" >
+                    文件内容
+                    <input type="text" class="txt" name="content" >
                     <br>
                     <br>
                     <input type="button" class="button" value="录入信息" onclick="submitImg()">

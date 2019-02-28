@@ -1,6 +1,7 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
 <html>
     <head>
-        <meta charset="utf-8">
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
         <title>注册界面</title>
         <style> 
             .body{
@@ -20,7 +21,7 @@
                 background-size:100% 100%;
                 -moz-background-size:100% 100%;
                 border-radius: 20px;
-                width: 600px;
+                width: 800px;
                 height: 500px;
                 margin: auto;
                 position: absolute;
@@ -29,27 +30,12 @@
                 right: 0;
                 bottom: 0;
             }
-
-            .head2{
-                text-align: center;
-                font-weight:bold;
-                font-size:24px;
-                background-color:rgba(255,255,255,0.2);
-                box-shadow: 10px 10px 5px #888888;
-                width: 800px;
-                height: 600px;
-                position: absolute;
-                top:100px;
-                left:100px;
-                right: 0;
-                bottom: 0;
-            }
             .txt{
                 font-weight:bold;
                 font-size:25px;
                 border-radius: 10px;
                 background-color:rgba(0,0,255,0.6);
-                width:300px;        
+                width:280px;        
                 height:35px;      
                 position:relative;
                 top:-2px;    
@@ -60,17 +46,6 @@
                 font-weight:bold;
                 font-size:25px;
                 background-color:rgba(255,0,0,0.7);
-                width:100px;        
-                height:35px;      
-                position:relative;
-                top:0;    
-                left:0;
-            }
-            .button2{
-                text-align: center;
-                font-weight:bold;
-                font-size:25px;
-                background-color:rgba(100,149,237,0.9);
                 width:370px;        
                 height:35px;      
                 position:relative;
@@ -80,38 +55,56 @@
             .word{
                 font-size:30px;
             }
+
+        label{
+            cursor: pointer;
+            display: inline-block;
+            padding: 3px 6px;
+            text-align: right;
+            width: 150px;
+            vertical-align: top;
+        }
         </style>
     </head>
     <body class="body">
-        <!--<div class="head2">
-            <h1>welcome to my http!</h1>
-            <h2>公司简介</h2>
-        </div>-->
         <div class="head"  >
             <br>
-            <h1>图书管理系统</h1>
+            <h2>用户注册</h2>
             <br>
-            <form action="/cgi/echoServer" method="GET" >
+            <form action="/cgi/register" method="POST" >
                 <div >
-                    <font class="word">账号:</font>
-                    <input type="text" class="txt" name="id" placeholder="账号/手机/邮箱">
+                     <label><font class="word">用户名：</font></label>
+                     <input type="text" class="txt" name="id" placeholder="字母或数字"> 
                     <br>
                     <br>
-                    <br>
-                    <font class="word">密码:</font>
-                    <input type="password" class="txt" name="pwd" placeholder="请输入密码">
-                    <br>
+                    <label><font class="word">密码：</font></label>
+                    <input type="password" class="txt" id = "pwd1" name="password" placeholder="字母或数字">
                     <br>
                     <br>
-                    <input type="submit" class="button" value="注册">
-                    &nbsp;&nbsp;&nbsp;&nbsp;
-                    <input type="submit" class="button" value="登录" formaction="/cgi2/server">
+                    <label><font class="word"> 确认密码：</font></label>
+                    <input type="password" class="txt" id = "pwd2" name="password" placeholder="字母或数字"onkeyup="validate()"><span id="tishi"></span></input>
                     <br>
                     <br>
-                    <input type="submit" class="button2" value="切换至管理员登录" formaction="/cgi3/server">
+                    <input type="submit" class="button" value="注册" formaction="/cgi/user_register">
+                    <br>
+                    <br>
                     <br>
                 </div>
             </form>
         </div>
+			<script>
+          function validate() {
+              var pwd1 = document.getElementById("pwd1").value;
+              var pwd2 = document.getElementById("pwd2").value;
+              if(pwd1 == pwd2) {
+                  document.getElementById("tishi").innerHTML="<font color='green'>两次密码相同</font>";
+                  document.getElementById("submit").disabled = false;
+              }
+              else {
+                  document.getElementById("tishi").innerHTML="<font color='red'>两次密码不相同</font>";
+                document.getElementById("submit").disabled = true;
+              }
+          }
+      </script>
     </body>
 </html>
