@@ -69,7 +69,14 @@
     <body class="body">
         <div class="head">
             <h2>上传笔记</h2>
-            <form action="/cgi/upload_file" method="POST" >
+		<form action="UploadFile.ashx" method="post" enctype="multipart/form-data">
+    <input type="file" name="fileUpload" />
+    <input type="submit" value="上传文件" formaction="/cgi/upload_file"/>
+    <h3><a href="/cgi/home">返回主页</a></h3>
+    </form>
+
+  <script>           
+ <form  enctype="multipart/form-data" action="/cgi/upload_file" method="POST" >
                 <script type="text/javascript">            
                     //判断浏览器是否支持FileReader接口
                 if (typeof FileReader == 'undefined') {
@@ -104,7 +111,7 @@ function xmTanUploadFile(obj) {
     }
     reader.readAsDataURL(file);
 }
-function submitImg(){                                                                                                                        
+function submitFile(){                                                                                                                        
      var src = $('file').attr('src');
      var name = $('input').attr('text');
      var write = $('input').attr('text');
@@ -116,6 +123,7 @@ function submitImg(){
                           });
  }
 </script>
+<!--
 <div class="head2">
     <p>
     上传文件：
@@ -140,6 +148,6 @@ function submitImg(){
                     <br>
                 </div>
             </form>
-        </div>
+        </div> -->
     </body>
 </html>

@@ -1,0 +1,56 @@
+<html>
+  <meta charset="utf-8">
+<body>
+<form action="user.do?method=login" id="form1" name="form1" method="post" ">  
+
+<table border="0" align="center">  
+
+<tr>  
+
+<td width="150">
+
+<font size="5">用户名:</font></td>  
+
+<td>
+
+<label><input name="user" type="text" id="user" ></label><
+
+/td>  
+
+<td width="200" >
+
+<div id="nameerro" class="errortxt"></div>
+
+</td>  
+
+</tr>  
+
+<tr>  
+
+<td><font size="5">密 码:</font></td>  
+
+<td><label><input name="pwd" type="password" id="pwd" ></label></td>  
+
+<td width="200"><div id="passworderro" class="errortxt"></div></td>  
+
+</tr>  
+
+<tr>  
+
+<td><label><input type="radio" name="radio" id="radio" value="个人客户" ><font color="black">个人客户</font></label></td>  
+
+<td></td>  
+
+<td><div id="boxErr" class="errortxt"></div></td>  
+
+</tr>  
+
+<tr>  
+
+<td><input class="submit" name="submit" type="submit" value="登录" ></td>  
+
+<td ><input class="submit" name="button" type="button" value="注册" onclick="location.href='register.jsp'"></td> </tr>  
+
+</table>  
+</body>
+</html>
